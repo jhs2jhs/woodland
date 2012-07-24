@@ -27,3 +27,7 @@ pip-log.txt
 .mr.developer.cfg
 
 *.javac
+
+*~
+
+*.Ds_Store
