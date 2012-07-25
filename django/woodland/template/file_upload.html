@@ -1,11 +1,34 @@
-<html>
-<body>
-<form method="post" 
-      action = "/main/test_file_upload"
+{% extends "./base.html" %}
+
+
+{% block content %}
+<br>
+
+{% if error %}
+<div>
+<h2>Error: {{ error }}<h2>
+</div>
+{% endif %}
+
+Please choose the image you want to upload and fill the details bellow:
+
+<div>
+<form method="post" action="/main/photo_upload"
       enctype="multipart/form-data">
   {% csrf_token %}
-  <input type="file" name="myfile" />
+  <br>
+  <input type="file" name="myphoto" />
+  <br>
+  Title: <input type="text" name="photo_title" />
+  <br>
+  Tags: <input type="text" name="photo_tags" />
+  <br>
+  Lat:<input type="text" name="photo_lat" /> Lng:<input type="text" name="photo_lng" />
+  <br>
+  <textarea rows="10" cols="50" name="photo_desc" ></textarea>
+  <br>
   <input type="submit" name="submit" value="Upload" />
 </form>
-</body>
-</html>
+</div>
+
+{% endblock %}

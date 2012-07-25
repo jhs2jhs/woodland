@@ -1,0 +1,36 @@
+{% extends "./base.html" %}
+
+
+{% block content %}
+<br>
+
+A list of all your uploaded photos:
+
+<div>
+<table border="1">
+  <tbody>
+  <tr>
+    <th>Photo</th>
+    <th>Details</th>
+  </tr>
+  {% for p in photos %}
+  <tr>
+    <td><img src="{{ p.path }}" width="200" height="150" alt="{{ p.name }}" /></td>
+    <td>
+      <table>
+	<tr><td>{{ p.name }}</td></tr>
+	<tr><td>{{ p.time }}</td></tr>
+	<tr><td>{{ p.username }}</td></tr>
+	<tr><td>{{ p.lat }}</td></tr>
+	<tr><td>{{ p.lng }}</td></tr>
+	<tr><td>{{ p.desc }}</td></tr>
+	<tr><td>{{ p.tags }}</td></tr>
+      </table>
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% endblock %}

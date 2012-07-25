@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Woodland</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <style>
+      body {
+      background-color: #DDDDDD;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+    <a href="{% url django.contrib.auth.views.login %}?next={{request.path}}">Login</a>
+    -->
+    <h1>Woodland Lancaster</h1>
+    {% if user.is_authenticated %}
+    <div>
+    Login as {{ user.username }} |
+    <a href="{% url django.contrib.auth.views.logout %}?next=/">Logout</a>
+    </div>
+    {% endif %} 
+    {% block content %}{% endblock %}
+  </body>
+</html>
