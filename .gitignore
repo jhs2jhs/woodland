@@ -33,3 +33,5 @@ pip-log.txt
 *.Ds_Store
 
 django/woodland/uploads/*
+
+*.sql
