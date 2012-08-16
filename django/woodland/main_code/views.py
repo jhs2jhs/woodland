@@ -5,6 +5,7 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from main_code.models import *
+import json
 
 uploads_root = '/uploads/'
 
@@ -50,13 +51,24 @@ def request_get(param, key):
     return param.get(key, None)
 
 def photo_upload(request):
+    print request
     errors = []
     title = ''
     path = ''
     tags = ''
     lat = ''
     lng = ''
-    user = request.user
+    user_name = request.REQUEST.get('myusername', None)
+    if user_name == None:
+        error = 'myusername is empty'
+        errors.append(error)
+    else:
+        try:
+            user = User.objects.get(username=user_name)
+            print user
+        except Exception as e:
+            error = 'myusername is wrong: '+e
+            errors.append(error)
     desc = ''
     fs = ''
     if request.method == 'POST':
@@ -106,7 +118,11 @@ def photo_upload(request):
     if desc == None or desc == '':
         error = 'photo_desc is empty'
         errors.append(error)
-    if len(errors) == 0:
+    r = {}
+    if len(errors) != 0:
+        r['status'] = 'bad'
+        r['errors'] = errors
+    else:
         p, created = UploadFile.objects.get_or_create(user=user, type=0, name=title, path=path, lat=lat, lng=lng, desc=desc)
         p.save()
         ts = tags.split(',')
@@ -114,6 +130,12 @@ def photo_upload(request):
             tag, created = Tag.objects.get_or_create(name=t)
             p.tags.add(tag)
         p.save()
+        p_path = p.path
+        p_id = p.id
+        r['status'] = 'good'
+        r['result'] = {'id':p_id, 'path':p_path}
+    rs = json.dumps(r)
+    return HttpResponse(rs)
     '''if len(errors) > 0: # if not debug, it would return json
     #    c = {
             "errors": errors,
@@ -122,12 +144,38 @@ def photo_upload(request):
         context = RequestContext(requests, c)
         return render_to_response('file_upload.html', context)
     '''
-    url = '/main/photo_view'
-    return HttpResponseRedirect(url)
+    #url = '/main/photo_view'
+    #return HttpResponseRedirect(url)
 
-@login_required
+#@login_required
 def photo_view(request):
-    user = request.user
+    print request
+    user_name = request.REQUEST.get('myusername', None)
+    r = {}
+    errors = []
+    if user_name == None:
+        error = 'myusername is empty'
+        errors.append(error)
+    else:
+        try:
+            user = User.objects.get(username=user_name)
+            print user
+        except Exception as e:
+            error = 'myusername is wrong: '+e
+            errors.append(error)
+    if len(errors) != 0:
+        r['status'] = 'bad'
+        r['error'] = errors
+        rs = json.dumps(r)
+        return HttpResponse(rs)
+    #user = request.user
+    ps = photo_view_get(user)
+    r['status'] = 'good'
+    r['result'] = ps
+    rs = json.dumps(r)
+    return HttpResponse(rs)
+
+def photo_view_get(user):
     photos = UploadFile.objects.filter(user=user)
     print photos
     ps = []
@@ -148,7 +196,7 @@ def photo_view(request):
         p = {
             'path':path,
             'name':name,
-            'time':time,
+            'time':str(time),
             'user':username,
             'lat':lat,
             'lng':lng,
@@ -156,12 +204,8 @@ def photo_view(request):
             'tags':tags
             }
         ps.append(p)
-    c = {
-        'photos': ps
-        }
-    print c
-    context = RequestContext(request, c)
-    return render_to_response('file_view.html', context)
+    return ps
+
 
 def photo_comment_view(request):
     return HttpResponse('photo comment')
@@ -171,11 +215,40 @@ def comment_make(request):
 
 
 ######################## demo purpose ##################
-@login_required
+#@login_required
 def demo_photo_upload(request):
     c = {}
     context = RequestContext(request, c)
     return render_to_response('file_upload.html', context)
+
+def demo_photo_view(request):
+    print request
+    user_name = request.REQUEST.get('myusername', None)
+    r = {}
+    errors = []
+    if user_name == None:
+        error = 'myusername is empty'
+        errors.append(error)
+    else:
+        try:
+            user = User.objects.get(username=user_name)
+            print user
+        except Exception as e:
+            error = 'myusername is wrong: '+e
+            errors.append(error)
+    if len(errors) != 0:
+        r['status'] = 'bad'
+        r['error'] = errors
+        rs = json.dumps(r)
+        return HttpResponse(rs)
+    #user = request.user
+    ps = photo_view_get(user)
+    c = {
+        'photos': ps
+        }
+    print c
+    context = RequestContext(request, c)
+    return render_to_response('file_view.html', context)
 
 def demo_comment_make(request):
     return HttpResponse('hello')
