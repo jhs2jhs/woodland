@@ -1,0 +1,37 @@
+{% extends "./base.html" %}
+
+
+{% block content %}
+<br>
+
+{% if error %}
+<div>
+<h2>Error: {{ error }}<h2>
+</div>
+{% endif %}
+
+Please choose the image you want to upload and fill the details bellow:
+
+<div>
+<form method="post" action="/main/demo_photo_edit_confirm">
+  {% csrf_token %}
+  <input type="hidden" name="pid" value="{{ photo.pid }}" />
+  <br>
+  <img src="{{ photo.path }}" width="200" height="150" alt="{{ photo.path }}" />
+  <br>
+  Username: <input type="text" name="myusername" value="{{ photo.user }}" />
+  <br>
+  Title: <input type="text" name="photo_title" value="{{ photo.name }}" />
+  <br>
+  Tags: <input type="text" name="photo_tags" value="{{ photo.tags }}" />
+  <br>
+  Lat:<input type="text" name="photo_lat" value="{{ photo.lat }}" /> Lng:<input type="text" name="photo_lng" value="{{ photo.lng }}" />
+  <br>
+  <textarea rows="10" cols="50" name="photo_desc" >{{ photo.desc }}</textarea>
+  <br>
+  <input type="submit" name="submit" value="Edit" />
+  <input type="submit" name="submit" value="Cancel" />
+</form>
+</div>
+
+{% endblock %}

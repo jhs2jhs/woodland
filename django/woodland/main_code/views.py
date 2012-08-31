@@ -10,11 +10,11 @@ import json
 uploads_root = '/uploads/'
 
 def home(request):
-    print request
+    #print request
     return HttpResponse("Hello, main woodland")
 
 def hello(request):
-    print request
+    #print request
     return HttpResponse("Hello, main woodland")
 
 from django import forms
@@ -51,7 +51,7 @@ def request_get(param, key):
     return param.get(key, None)
 
 def photo_upload(request):
-    print request
+    #print request
     errors = []
     title = ''
     path = ''
@@ -83,7 +83,7 @@ def photo_upload(request):
                 path = uploads_root+str(now)+"_"+fs.name
                 path = path.replace(':', '_')
                 path = path.replace(' ', '_')
-                print path
+                #print path
                 f = open('.'+path, 'w')
                 if fs.multiple_chunks:
                     for c in fs.chunks():
@@ -149,7 +149,7 @@ def photo_upload(request):
 
 #@login_required
 def photo_view(request):
-    print request
+    #print request
     user_name = request.REQUEST.get('myusername', None)
     r = {}
     errors = []
@@ -177,10 +177,11 @@ def photo_view(request):
 
 def photo_view_get(user):
     photos = UploadFile.objects.filter(user=user)
-    print photos
+    #print photos
     ps = []
     for photo in photos:
-        print photo
+        #print photo
+        pid = photo.id
         path = photo.path
         name = photo.name
         time = photo.time_created
@@ -201,11 +202,37 @@ def photo_view_get(user):
             'lat':lat,
             'lng':lng,
             'desc':desc,
-            'tags':tags
+            'tags':tags,
+            'pid':pid,
             }
         ps.append(p)
     return ps
 
+def photo_edit_get(photo, user_name):
+    pid = photo.id
+    path = photo.path
+    name = photo.name
+    time = photo.time_created
+    lat = photo.lat,
+    lng = photo.lng,
+    desc = photo.desc
+    tags_fields = photo.tags.all()
+    tags = ''
+    for t in tags_fields:
+        t_name = t.name
+        tags = tags+","+t_name # should i add url on it?
+    p = {
+        'path':path,
+        'name':name,
+        'time':str(time),
+        'user':user_name,
+        'lat':lat,
+        'lng':lng,
+        'desc':desc,
+        'tags':tags,
+        'pid':pid,
+        }
+    return p
 
 def photo_comment_view(request):
     return HttpResponse('photo comment')
@@ -222,7 +249,7 @@ def demo_photo_upload(request):
     return render_to_response('file_upload.html', context)
 
 def demo_photo_view(request):
-    print request
+    #print request
     user_name = request.REQUEST.get('myusername', None)
     r = {}
     errors = []
@@ -244,11 +271,108 @@ def demo_photo_view(request):
     #user = request.user
     ps = photo_view_get(user)
     c = {
-        'photos': ps
+        'photos': ps,
+        'myusername':user_name
         }
-    print c
+    #print c
     context = RequestContext(request, c)
     return render_to_response('file_view.html', context)
+
+def demo_photo_edit(request):
+    #print request
+    pid = request.REQUEST.get('pid', None)
+    user_name = request.REQUEST.get('myusername', None)
+    r = {}
+    errors = []
+    if user_name == None:
+        error = 'myusername is empty'
+        errors.append(error)
+    else:
+        try:
+            user = User.objects.get(username=user_name)
+            print user
+        except Exception as e:
+            error = 'myusername is wrong: '+e
+            errors.append(error)
+    if pid == None:
+        error = 'pid is empty'
+        errors.append(error)
+    photos = UploadFile.objects.filter(id=pid)
+    if len(photos) != 1:
+        error = 'Your PID is incorrect'
+        errors.append(error)
+    if len(errors) != 0:
+        r['status'] = 'bad'
+        r['error'] = errors
+        rs = json.dumps(r)
+        return HttpResponse(rs)
+    photo = photos[0]
+    print photo
+    #user = request.user
+    ps = photo_edit_get(photo, user_name)
+    #print ps
+    c = {
+        'photo': ps, 
+        }
+    #print c
+    #print c
+    context = RequestContext(request, c)
+    return render_to_response('file_edit.html', context)
+
+def demo_photo_edit_confirm(request):
+    #print request
+    errors = []
+    title = ''
+    tags = ''
+    lat = ''
+    lng = ''
+    user_name = request.REQUEST.get('myusername', None)
+    if user_name == None:
+        error = 'myusername is empty'
+        errors.append(error)
+    else:
+        try:
+            user = User.objects.get(username=user_name)
+            print user
+        except Exception as e:
+            error = 'myusername is wrong: '+e
+            errors.append(error)
+    desc = ''
+    pid = request.REQUEST.get('pid', None)
+    if pid == None:
+        error = 'pid is empty'
+        errors.append(error)
+    photos = UploadFile.objects.filter(id=pid)
+    title = request.REQUEST.get('photo_title', None)
+    tags = request.REQUEST.get('photo_tags', None)
+    lat = request.REQUEST.get('photo_lat', None)
+    lng = request.REQUEST.get('photo_lng', None)
+    desc = request.REQUEST.get('photo_desc', None)
+    if len(photos) != 1:
+        error = 'Your PID is incorrect'
+        errors.append(error)
+    r = {}
+    if len(errors) != 0:
+        r['status'] = 'bad'
+        r['errors'] = errors
+    else:
+        photo = photos[0]
+        photo.name = title
+        photo.lat = lat
+        photo.lng = lng
+        photo.desc = desc
+        photo.save()
+        photo.tags.clear()
+        print photo.tags
+        ts = tags.split(',')
+        for t in tags:
+            tag, created = Tag.objects.get_or_create(name=t)
+            if tag in photo.tags.all():
+            #if photo.tags.has(tag):
+                print tag, "*****"
+            #photo.tags.add(tag)
+        photo.save()
+    return HttpResponseRedirect('/main/demo_photo_view?myusername=%s'%(user_name))
 
 def demo_comment_make(request):
     return HttpResponse('hello')

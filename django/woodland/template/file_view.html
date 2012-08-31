@@ -12,6 +12,7 @@ A list of all your uploaded photos:
   <tr>
     <th>Photo</th>
     <th>Details</th>
+    <th>Action</th>
   </tr>
   {% for p in photos %}
   <tr>
@@ -26,6 +27,15 @@ A list of all your uploaded photos:
 	<tr><td>{{ p.desc }}</td></tr>
 	<tr><td>{{ p.tags }}</td></tr>
       </table>
+    </td>
+    <td>
+      <form action="/main/demo_photo_edit">
+	<input type="hidden" name="pid" value="{{ p.pid }}"/>
+	<input type="hidden" name="myusername" value="{{ myusername }}"/>
+	<input type="submit" name="submit" value="Edit"/>
+	<br>
+	<input type="submit" name="delete" value="Delete"/>
+      </form>
     </td>
   </tr>
   {% endfor %}

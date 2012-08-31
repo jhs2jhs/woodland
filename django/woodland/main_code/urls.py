@@ -13,7 +13,10 @@ urlpatterns = patterns('',
     ##### demo 
     url(r'^demo_photo_upload$', 'main_code.views.demo_photo_upload'),
     url(r'^demo_photo_view$', 'main_code.views.demo_photo_view'),
-
+    url(r'^demo_photo_edit$', 'main_code.views.demo_photo_edit'),
+    url(r'^demo_photo_edit_confirm$', 'main_code.views.demo_photo_edit_confirm'),
+                       
+   
     url(r'^photo_view$', 'main_code.views.photo_view'),
     url(r'^photo_comment_view$', 'main_code.views.photo_comment_view'),
     url(r'^demo_comment_make$', 'main_code.views.demo_comment_make'),      
