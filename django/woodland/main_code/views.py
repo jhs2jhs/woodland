@@ -50,6 +50,8 @@ def test_file_upload(request):
 def request_get(param, key):
     return param.get(key, None)
 
+from django.views.decorators.csrf import *
+@csrf_exempt
 def photo_upload(request):
     #print request
     errors = []
@@ -67,7 +69,7 @@ def photo_upload(request):
             user = User.objects.get(username=user_name)
             print user
         except Exception as e:
-            error = 'myusername is wrong: '+e
+            error = 'myusername is wrong: '
             errors.append(error)
     desc = ''
     fs = ''
@@ -161,7 +163,7 @@ def photo_view(request):
             user = User.objects.get(username=user_name)
             print user
         except Exception as e:
-            error = 'myusername is wrong: '+e
+            error = 'myusername is wrong: '
             errors.append(error)
     if len(errors) != 0:
         r['status'] = 'bad'
@@ -331,6 +333,7 @@ def photo_edit(request):
 
 
 ######################## demo purpose ##################
+
 #@login_required
 def demo_photo_upload(request):
     c = {}
@@ -350,7 +353,7 @@ def demo_photo_view(request):
             user = User.objects.get(username=user_name)
             print user
         except Exception as e:
-            error = 'myusername is wrong: '+e
+            error = 'myusername is wrong: '
             errors.append(error)
     if len(errors) != 0:
         r['status'] = 'bad'
