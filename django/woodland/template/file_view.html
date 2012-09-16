@@ -33,7 +33,11 @@ A list of all your uploaded photos:
 	<input type="hidden" name="pid" value="{{ p.pid }}"/>
 	<input type="hidden" name="myusername" value="{{ myusername }}"/>
 	<input type="submit" name="submit" value="Edit"/>
-	<br>
+      </form>
+      <br>
+      <form action="/main/demo_photo_delete">
+	<input type="hidden" name="pid" value="{{ p.pid }}"/>
+	<input type="hidden" name="myusername" value="{{ myusername }}"/>
 	<input type="submit" name="delete" value="Delete"/>
       </form>
     </td>

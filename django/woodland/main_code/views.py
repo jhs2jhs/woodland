@@ -240,6 +240,95 @@ def photo_comment_view(request):
 def comment_make(request):
     return HttpResponse('comment make')
 
+def photo_delete(request):
+    pid = request.REQUEST.get('pid', None)
+    user_name = request.REQUEST.get('myusername', None)
+    r = {}
+    errors = []
+    if user_name == None:
+        error = 'myusername is empty'
+        errors.append(error)
+    else:
+        try:
+            user = User.objects.get(username=user_name)
+            print user
+        except Exception as e:
+            error = 'myusername is wrong: '+e
+            errors.append(error)
+    if pid == None:
+        error = 'pid is empty'
+        errors.append(error)
+    photos = UploadFile.objects.filter(id=pid)
+    if len(photos) != 1:
+        error = 'Your PID is incorrect'
+        errors.append(error)
+    if len(errors) != 0:
+        r['status'] = 'bad'
+        r['error'] = errors
+        rs = json.dumps(r)
+        return HttpResponse(rs)
+    photo = photos[0]
+    ps = photo_edit_get(photo, user_name)
+    #print ps, '+++++'
+    r['status'] = 'good'
+    r['result'] = {'pid':pid, 'delete':'yes', 'ps':ps}
+    rs = json.dumps(r)
+    print rs
+    photo.delete()
+    return HttpResponse(rs)
+
+
+def photo_edit(request):
+    #print request
+    errors = []
+    title = ''
+    tags = ''
+    lat = ''
+    lng = ''
+    user_name = request.REQUEST.get('myusername', None)
+    if user_name == None:
+        error = 'myusername is empty'
+        errors.append(error)
+    else:
+        try:
+            user = User.objects.get(username=user_name)
+            print user
+        except Exception as e:
+            error = 'myusername is wrong: '+e
+            errors.append(error)
+    desc = ''
+    pid = request.REQUEST.get('pid', None)
+    if pid == None:
+        error = 'pid is empty'
+        errors.append(error)
+    photos = UploadFile.objects.filter(id=pid)
+    tags = request.REQUEST.get('photo_tags', None)
+    desc = request.REQUEST.get('photo_desc', None)
+    if len(photos) != 1:
+        error = 'Your PID is incorrect'
+        errors.append(error)
+    r = {}
+    if len(errors) != 0:
+        r['status'] = 'bad'
+        r['errors'] = errors
+    else:
+        photo = photos[0]
+        photo.desc = desc
+        photo.save()
+        photo.tags.clear()
+        ts = tags.split(',')
+        for t in tags:
+            tag, created = Tag.objects.get_or_create(name=t)
+            if tag in photo.tags.all():
+            #if photo.tags.has(tag):
+                print tag, "*****"
+            #photo.tags.add(tag)
+        photo.save()
+        r['status'] = 'good'
+        r['status'] = {'pid':photo.id}
+    rs = json.dumps(r)
+    return HttpResponse(rs)
+
 
 ######################## demo purpose ##################
 #@login_required
@@ -376,3 +465,44 @@ def demo_photo_edit_confirm(request):
 
 def demo_comment_make(request):
     return HttpResponse('hello')
+
+
+########### delete 
+def demo_photo_delete(request):
+    #print request
+    pid = request.REQUEST.get('pid', None)
+    user_name = request.REQUEST.get('myusername', None)
+    r = {}
+    errors = []
+    if user_name == None:
+        error = 'myusername is empty'
+        errors.append(error)
+    else:
+        try:
+            user = User.objects.get(username=user_name)
+            print user
+        except Exception as e:
+            error = 'myusername is wrong: '+e
+            errors.append(error)
+    if pid == None:
+        error = 'pid is empty'
+        errors.append(error)
+    photos = UploadFile.objects.filter(id=pid)
+    if len(photos) != 1:
+        error = 'Your PID is incorrect'
+        errors.append(error)
+    if len(errors) != 0:
+        r['status'] = 'bad'
+        r['error'] = errors
+        rs = json.dumps(r)
+        return HttpResponse(rs)
+    photo = photos[0]
+    ps = photo_edit_get(photo, user_name)
+    #print ps, '+++++'
+    r['status'] = 'good'
+    r['result'] = {'pid':pid, 'delete':'yes', 'ps':ps}
+    rs = json.dumps(r)
+    print rs
+    photo.delete()
+    url = '/main/demo_photo_view?myusername=%s'%(user_name)
+    return HttpResponseRedirect(url)
